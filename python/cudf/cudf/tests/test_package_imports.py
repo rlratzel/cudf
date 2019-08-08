@@ -3,6 +3,7 @@ import importlib
 from os import path
 import sys
 
+
 def setup_module(module):
     """
     Retrieve and save all public symbols in the cudf namespace for comparison
@@ -13,12 +14,14 @@ def setup_module(module):
     del cudf
     sys.modules.pop("cudf")
 
+
 def teardown_function(function):
     """
     "unimport" cudf
     """
     globals().pop("cudf", None)
     sys.modules.pop("cudf", None)
+
 
 def __getVarsLoaded(module):
     """
@@ -28,6 +31,7 @@ def __getVarsLoaded(module):
     extraVars = ["import_module", "numba"]
     return set([k for k in module.__dict__.keys()
                 if not(k.startswith("__") or (k in extraVars))])
+
 
 ########################################
 def test_import_package_module():
@@ -45,6 +49,7 @@ def test_import_package_module():
         exceptionRaised = e
     assert exceptionRaised is None
 
+
 def test_from_import_star():
     """
     Ensure a "from cudf import *" does an "actual" import of everything in the
@@ -57,12 +62,13 @@ def test_from_import_star():
     fakeModuleFile.file.flush()
     spec = importlib.util.spec_from_file_location(
         path.splitext(path.basename(fakeModuleFile.name))[0],
-                      fakeModuleFile.name)
+        fakeModuleFile.name)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
 
     varsLoaded = __getVarsLoaded(module)
     assert varsLoaded == set(allPossibleCudfNamespaceVars)
+
 
 def test_from_import_names():
     """
@@ -74,6 +80,7 @@ def test_from_import_names():
     # Only names explicitly imported above should be present
     varsLoaded = __getVarsLoaded(cudf)
     assert varsLoaded == set(["DataFrame", "from_dlpack", "arccos"])
+
 
 def test_access_names():
     """
@@ -88,6 +95,7 @@ def test_access_names():
     varsLoaded = __getVarsLoaded(cudf)
     assert varsLoaded == set(["Index", "read_avro", "arcsin"])
 
+
 def test_cuda_context_created():
     """
     Ensure a CUDA context is created even from a lazy import.
@@ -98,7 +106,7 @@ def test_cuda_context_created():
     import cudf
     import numba
     try :
-        c = numba.cuda.current_context()
+        numba.cuda.current_context()
     # the "cuda" attr of the numba module will not exist if a CUDA context was
     # not created
     except AttributeError:
